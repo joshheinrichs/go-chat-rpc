@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./shared"
+	"../shared"
 	"bufio"
 	"fmt"
 	"log"
