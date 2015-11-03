@@ -19,6 +19,15 @@ const (
 	CMD_HELP   = CMD_PREFIX + "help"
 	CMD_NAME   = CMD_PREFIX + "name"
 	CMD_QUIT   = CMD_PREFIX + "quit"
+
+	MSG_HELP = "\nCommands:\n" +
+		CMD_CREATE + " foo - creates a chat room named foo\n" +
+		CMD_LIST + " - lists all chat rooms\n" +
+		CMD_JOIN + " foo - joins a chat room named foo\n" +
+		CMD_LEAVE + " - leaves the current chat room\n" +
+		CMD_HELP + " - lists all commands\n" +
+		CMD_NAME + " foo - changes your name to foo\n" +
+		CMD_QUIT + " - quits the program\n\n"
 )
 
 var token string
@@ -56,7 +65,7 @@ func Parse(str string) (err error) {
 		name := strings.TrimSuffix(strings.TrimPrefix(str, CMD_NAME+" "), "\n")
 		err = client.Call("Client.ChangeName", &Args{token, name}, nil)
 	case strings.HasPrefix(str, CMD_HELP):
-		err = client.Call("Client.Help", &token, nil)
+		fmt.Print(MSG_HELP)
 	case strings.HasPrefix(str, CMD_QUIT):
 		err = client.Call("Client.Quit", &token, nil)
 	}
@@ -79,7 +88,7 @@ func main() {
 	wg.Add(1)
 
 	var err error
-	client, err = rpc.DialHTTP("tcp", ":1234")
+	client, err = rpc.DialHTTP(CONN_TYPE, CONN_PORT)
 	if err != nil {
 		log.Fatal("dialing:", err)
 	}
