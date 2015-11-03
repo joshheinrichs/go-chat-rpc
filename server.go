@@ -286,7 +286,7 @@ type ChatRoom struct {
 	Join     chan *Client
 	Leave    chan *Client
 	Incoming chan string
-	Expire   chan int
+	Expire   chan bool
 	Expiry   time.Time
 }
 
@@ -367,7 +367,7 @@ func (chatRoom *ChatRoom) TryDelete() {
 	if chatRoom.Expiry.After(time.Now()) {
 		go func() {
 			time.Sleep(chatRoom.Expiry.Sub(time.Now()))
-			chatRoom.Expire <- 0
+			chatRoom.Expire <- true
 		}()
 	} else {
 		chatRoom.Broadcast(NOTICE_ROOM_DELETE)
