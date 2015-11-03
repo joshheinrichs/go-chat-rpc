@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./shared"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
@@ -142,7 +143,7 @@ func (r *Receiver) Connect(args *struct{}, token *string) error {
 	return nil
 }
 
-func (r *Receiver) SendMessage(args *Args, _ *struct{}) error {
+func (r *Receiver) SendMessage(args *shared.Args, _ *struct{}) error {
 	log.Println("SendMessage")
 	client, err := GetClient(args.Token)
 	if err != nil {
@@ -159,7 +160,7 @@ func (r *Receiver) SendMessage(args *Args, _ *struct{}) error {
 	return nil
 }
 
-func (r *Receiver) CreateChatRoom(args *Args, _ *struct{}) error {
+func (r *Receiver) CreateChatRoom(args *shared.Args, _ *struct{}) error {
 	log.Println("CreateChatRoom")
 	client, err := GetClient(args.Token)
 	if err != nil {
@@ -194,7 +195,7 @@ func (r *Receiver) ListChatRooms(token *string, _ *struct{}) error {
 	return nil
 }
 
-func (r *Receiver) JoinChatRoom(args *Args, _ *struct{}) error {
+func (r *Receiver) JoinChatRoom(args *shared.Args, _ *struct{}) error {
 	log.Println("JoinChatRoom")
 	client, err := GetClient(args.Token)
 	if err != nil {
@@ -231,7 +232,7 @@ func (r *Receiver) LeaveChatRoom(token *string, _ *struct{}) error {
 	return nil
 }
 
-func (r *Receiver) ChangeName(args *Args, _ *struct{}) error {
+func (r *Receiver) ChangeName(args *shared.Args, _ *struct{}) error {
 	log.Println("ChangeName")
 	client, err := GetClient(args.Token)
 	if err != nil {
@@ -298,7 +299,7 @@ func NewChatRoom(name string) *ChatRoom {
 		Join:     make(chan *Client),
 		Leave:    make(chan *Client),
 		Incoming: make(chan string),
-		Expire:   make(chan int),
+		Expire:   make(chan bool),
 		Expiry:   time.Now().Add(EXPIRY_TIME),
 	}
 	chatRoom.Listen()
@@ -392,7 +393,7 @@ func main() {
 	rcvr := new(Receiver)
 	rpc.Register(rcvr)
 	rpc.HandleHTTP()
-	l, e := net.Listen(CONN_TYPE, CONN_PORT)
+	l, e := net.Listen(shared.CONN_TYPE, shared.CONN_PORT)
 	if e != nil {
 		log.Fatal("listen error:", e)
 	}

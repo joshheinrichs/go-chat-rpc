@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./shared"
 	"bufio"
 	"fmt"
 	"log"
@@ -51,20 +52,20 @@ func Input() {
 func Parse(str string) (err error) {
 	switch {
 	default:
-		err = client.Call("Receiver.SendMessage", &Args{token, str}, nil)
+		err = client.Call("Receiver.SendMessage", &shared.Args{token, str}, nil)
 	case strings.HasPrefix(str, CMD_CREATE):
 		name := strings.TrimSuffix(strings.TrimPrefix(str, CMD_CREATE+" "), "\n")
-		err = client.Call("Receiver.CreateChatRoom", &Args{token, name}, nil)
+		err = client.Call("Receiver.CreateChatRoom", &shared.Args{token, name}, nil)
 	case strings.HasPrefix(str, CMD_LIST):
 		err = client.Call("Receiver.ListChatRooms", &token, nil)
 	case strings.HasPrefix(str, CMD_JOIN):
 		name := strings.TrimSuffix(strings.TrimPrefix(str, CMD_JOIN+" "), "\n")
-		err = client.Call("Receiver.JoinChatRoom", &Args{token, name}, nil)
+		err = client.Call("Receiver.JoinChatRoom", &shared.Args{token, name}, nil)
 	case strings.HasPrefix(str, CMD_LEAVE):
 		err = client.Call("Receiver.LeaveChatRoom", &token, nil)
 	case strings.HasPrefix(str, CMD_NAME):
 		name := strings.TrimSuffix(strings.TrimPrefix(str, CMD_NAME+" "), "\n")
-		err = client.Call("Receiver.ChangeName", &Args{token, name}, nil)
+		err = client.Call("Receiver.ChangeName", &shared.Args{token, name}, nil)
 	case strings.HasPrefix(str, CMD_HELP):
 		fmt.Print(MSG_HELP)
 	case strings.HasPrefix(str, CMD_QUIT):
@@ -91,7 +92,7 @@ func main() {
 	wg.Add(1)
 
 	var err error
-	client, err = rpc.DialHTTP(CONN_TYPE, CONN_PORT)
+	client, err = rpc.DialHTTP(shared.CONN_TYPE, shared.CONN_PORT)
 	if err != nil {
 		log.Fatal(err)
 	}

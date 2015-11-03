@@ -1,4 +1,4 @@
-package main
+package shared
 
 const (
 	CONN_TYPE = "tcp"

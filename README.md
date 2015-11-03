@@ -4,8 +4,7 @@ A simple chat client and server written in Go, implemented using RPC.
 
 ### Setup
 
-Start the server via `go run server.go shared.go` and then start as many clients as you want via `go run client.go shared.go`.
-
+Start the server via `go run server.go` and then start as many clients as you want via `go run client.go`
 ### Chat Commands
 
 The following special chat commands exist: 
