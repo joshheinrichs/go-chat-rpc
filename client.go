@@ -28,6 +28,7 @@ const (
 		CMD_HELP + " - lists all commands\n" +
 		CMD_NAME + " foo - changes your name to foo\n" +
 		CMD_QUIT + " - quits the program\n\n"
+	MSG_DISCONNECT = "Disconnected from the server.\n"
 )
 
 var token string
@@ -40,8 +41,8 @@ func Input() {
 	for {
 		str, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			wg.Done()
+			break
 		}
 		Parse(str)
 	}
@@ -50,24 +51,25 @@ func Input() {
 func Parse(str string) (err error) {
 	switch {
 	default:
-		err = client.Call("Client.SendMessage", &Args{token, str}, nil)
+		err = client.Call("Receiver.SendMessage", &Args{token, str}, nil)
 	case strings.HasPrefix(str, CMD_CREATE):
 		name := strings.TrimSuffix(strings.TrimPrefix(str, CMD_CREATE+" "), "\n")
-		err = client.Call("Client.CreateChatRoom", &Args{token, name}, nil)
+		err = client.Call("Receiver.CreateChatRoom", &Args{token, name}, nil)
 	case strings.HasPrefix(str, CMD_LIST):
-		err = client.Call("Client.ListChatRooms", &token, nil)
+		err = client.Call("Receiver.ListChatRooms", &token, nil)
 	case strings.HasPrefix(str, CMD_JOIN):
 		name := strings.TrimSuffix(strings.TrimPrefix(str, CMD_JOIN+" "), "\n")
-		err = client.Call("Client.JoinChatRoom", &Args{token, name}, nil)
+		err = client.Call("Receiver.JoinChatRoom", &Args{token, name}, nil)
 	case strings.HasPrefix(str, CMD_LEAVE):
-		err = client.Call("Client.LeaveChatRoom", &token, nil)
+		err = client.Call("Receiver.LeaveChatRoom", &token, nil)
 	case strings.HasPrefix(str, CMD_NAME):
 		name := strings.TrimSuffix(strings.TrimPrefix(str, CMD_NAME+" "), "\n")
-		err = client.Call("Client.ChangeName", &Args{token, name}, nil)
+		err = client.Call("Receiver.ChangeName", &Args{token, name}, nil)
 	case strings.HasPrefix(str, CMD_HELP):
 		fmt.Print(MSG_HELP)
 	case strings.HasPrefix(str, CMD_QUIT):
-		err = client.Call("Client.Quit", &token, nil)
+		err = client.Call("Receiver.Quit", &token, nil)
+		wg.Done()
 	}
 	return err
 }
@@ -76,9 +78,10 @@ func Parse(str string) (err error) {
 func Output() {
 	for {
 		var message string
-		err := client.Call("Client.ReceiveMessage", &token, &message)
+		err := client.Call("Receiver.ReceiveMessage", &token, &message)
 		if err != nil {
-			log.Fatal(err)
+			wg.Done()
+			break
 		}
 		fmt.Print(message)
 	}
@@ -90,17 +93,17 @@ func main() {
 	var err error
 	client, err = rpc.DialHTTP(CONN_TYPE, CONN_PORT)
 	if err != nil {
-		log.Fatal("dialing:", err)
+		log.Fatal(err)
 	}
 
-	err = client.Call("Client.Connect", struct{}{}, &token)
+	err = client.Call("Receiver.Connect", &struct{}{}, &token)
 	if err != nil {
-		log.Fatal("connection error:", err)
+		log.Fatal(err)
 	}
-	fmt.Printf("token: %s\n", token)
 
 	go Input()
 	go Output()
 
 	wg.Wait()
+	fmt.Print(MSG_DISCONNECT)
 }
